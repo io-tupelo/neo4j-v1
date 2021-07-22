@@ -14,20 +14,31 @@
                  [tupelo "21.07.08"]
                  ]
 
-  :global-vars {*warn-on-reflection* false}
-  :main ^:skip-aot neo4j.core
+  :profiles {:provided     {:dependencies [[org.clojure/clojure "1.10.3"]
+                                           [joplin.core "0.3.11"]
+                                           [org.neo4j.test/neo4j-harness "4.0.0"]]}
+             :profiles/dev {}
+             :project/dev  {:jvm-opts     ["-Dclojure.spec.check-asserts=true"
+                                           "-XX:-OmitStackTraceInFastThrow"]
+                            :dependencies []}}
 
-  :source-paths            ["src/clj"]
-  :java-source-paths       ["src/java"]
-  :test-paths              ["test/clj"]
-  :target-path             "target/%s"
-  :compile-path            "%s/class-files"
-  :clean-targets           [:target-path]
+             :dev          [:project/dev :profiles/dev]
+             :default      [:base :system :user :provided :dev]
 
-  :profiles {:dev     {:dependencies [ ]}
-             :uberjar {:aot :all}}
+  )
 
-  :jvm-opts ["-Xms500m" "-Xmx2g" ]
 
-)
-
+;  :global-vars {*warn-on-reflection* false}
+;  :main ^:skip-aot neo4j.core
+;
+;  :source-paths            ["src/clj"]
+;  :java-source-paths       ["src/java"]
+;  :test-paths              ["test/clj"]
+;  :target-path             "target/%s"
+;  :compile-path            "%s/class-files"
+;  :clean-targets           [:target-path]
+;
+;  :profiles {:dev     {:dependencies [ ]}
+;             :uberjar {:aot :all}}
+;
+;  :jvm-opts ["-Xms500m" "-Xmx2g" ]
