@@ -16,10 +16,9 @@
                   [tupelo "21.07.08"]
                  ]
 
-  :profiles      {:provided      {:dependencies [[org.neo4j.test/neo4j-harness "4.0.0"]]}
-
-                  :profiles/dev  {} ; *** overwritten from profiles.clj ***
-                  :profiles/test {} ; *** overwritten from profiles.clj ***
+  :profiles      {
+                  :profiles/dev  {} ; *** overwritten from profiles.clj by lein-environ plugin ***
+                  :profiles/test {} ; *** overwritten from profiles.clj by lein-environ plugin ***
 
                   :project/dev   {}
                   :project/test  {}
@@ -27,6 +26,9 @@
                   ; merge, last one wins
                   :dev           [:project/dev :profiles/dev]
                   :test          [:project/test :profiles/test]
+
+                  ; ***** vvv SUPER SLOW!!! Increases test runtime from 9 sec => 90 sec! vvv *****
+                  ; :provided      {:dependencies [[org.neo4j.test/neo4j-harness "4.0.0"]]}  ; 
                  }
 
   :global-vars   {*warn-on-reflection* false}
