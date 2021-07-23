@@ -1,12 +1,12 @@
 ; ***** if using local Neo4j Desktop *****
-  {:profiles/dev  {:env
-                     {:neo4j-uri      "bolt://localhost:7687"
-                      :neo4j-username "neo4j"
-                      :neo4j-password "secret"}}
-   :profiles/test {:env
-                     {:neo4j-uri      "bolt://localhost:7687"
-                      :neo4j-username "neo4j"
-                      :neo4j-password "secret"}}}
+{:profiles/dev  {:env
+                   {:neo4j-uri      "bolt://localhost:7687"
+                    :neo4j-username "neo4j"
+                    :neo4j-password "secret"}}
+ :profiles/test {:env
+                   {:neo4j-uri      "bolt://localhost:7687"
+                    :neo4j-username "neo4j"
+                    :neo4j-password "secret"}}}
 
 ; ***** if using Neo4j Aura *****
 ; {:profiles/dev  {:env
