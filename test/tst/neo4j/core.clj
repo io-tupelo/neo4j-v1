@@ -1,8 +1,7 @@
-(ns neo4j-clj.core-test
-  (:use tupelo.core clojure.test)
+(ns tst.neo4j.core
+  (:use neo4j.core tupelo.core clojure.test)
   (:require
     [environ.core :as environ]
-    [neo4j-clj.core :as db :refer [defquery disconnect get-session execute with-transaction with-retry]]
     [tupelo.string :as str]
   )
   (:import
@@ -18,7 +17,7 @@
 )
 
 (def temp-db
-  (db/connect
+  (connect
     (URI. (environ/env :neo4j-uri))
     (environ/env :neo4j-username)
     (environ/env :neo4j-password)))

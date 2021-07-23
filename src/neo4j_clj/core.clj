@@ -1,8 +1,8 @@
-(ns neo4j-clj.core
+(ns neo4j.core
   "This namespace contains the logic to connect to Neo4j instances,
   create and run queries "
   (:require
-    [neo4j-clj.compatibility :refer [neo4j->clj clj->neo4j]])
+    [neo4j.compatibility :refer [neo4j->clj clj->neo4j]])
   (:import 
     [java.net URI]
     [java.util.logging Level]
