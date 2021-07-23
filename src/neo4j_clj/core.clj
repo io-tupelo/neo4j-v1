@@ -11,7 +11,8 @@
 
 ;; Connecting to dbs
 
-(defn config [options]
+(defn config
+  [options]
   (let [logging (:logging options (ConsoleLogging. Level/CONFIG))]
     (-> (Config/builder)
         (.withLogging logging)
@@ -31,9 +32,9 @@
    (let [^AuthToken auth (AuthTokens/basic user password)
          ^Config config (config options)
          db (GraphDatabase/driver uri auth config)]
-     {:url        uri,
-      :user       user,
-      :password   password,
+     {:url        uri
+      :user       user
+      :password   password
       :db         db
       :destroy-fn #(.close db)}))
 
@@ -42,12 +43,13 @@
 
   ([^URI uri options]
    (let [^Config config (config options)
-         db (GraphDatabase/driver uri, config)]
-     {:url        uri,
-      :db         db,
+         db (GraphDatabase/driver uri config)]
+     {:url        uri
+      :db         db
       :destroy-fn #(.close db)})))
 
-(defn disconnect [db]
+(defn disconnect
+  [db]
   "Disconnect a connection"
   ((:destroy-fn db)))
 
@@ -67,16 +69,22 @@
     (when-let [in-mem (find-ns 'neo4j-clj.in-memory)]
       ((ns-resolve in-mem 'create-in-memory-connection)))
     (catch Throwable t
-      (throw (ex-info "Sorry, unable to create an in-memory Neo4j instance.
+      (throw
+        (ex-info
+          "Sorry, unable to create an in-memory Neo4j instance.
 Did you include neo4j-harness to your classpath, e.g. as a test dependency
-to your project?" {} t)))))
+to your project?"
+          {}
+          t)))))
 
 ;; Sessions and transactions
 
-(defn get-session [^Driver connection]
+(defn get-session
+  [^Driver connection]
   (.session (:db connection)))
 
-(defn- make-success-transaction [tx]
+(defn- make-success-transaction
+  [tx]
   (proxy [org.neo4j.driver.Transaction] []
     (run
       ([q] (.run tx q))
@@ -89,7 +97,8 @@ to your project?" {} t)))))
       (.commit tx)
       (.close tx))))
 
-(defn get-transaction [^Session session]
+(defn get-transaction
+  [^Session session]
   (make-success-transaction (.beginTransaction session)))
 
 ;; Executing cypher queries
@@ -114,7 +123,8 @@ to your project?" {} t)))))
   [name ^String query]
   `(def ~name (create-query ~query)))
 
-(defn retry-times [times body]
+(defn retry-times
+  [times body]
   (let [res (try
               {:result (body)}
               (catch TransientException e#
@@ -125,11 +135,13 @@ to your project?" {} t)))))
       (recur (dec times) body)
       (:result res))))
 
-(defmacro with-transaction [connection tx & body]
+(defmacro with-transaction
+  [connection tx & body]
   `(with-open [~tx (get-transaction (get-session ~connection))]
      ~@body))
 
-(defmacro with-retry [[connection tx & {:keys [max-times] :or {max-times 1000}}] & body]
+(defmacro with-retry
+  [[connection tx & {:keys [max-times] :or {max-times 1000}}] & body]
   `(retry-times ~max-times
                 (fn []
                   (with-transaction ~connection ~tx ~@body))))

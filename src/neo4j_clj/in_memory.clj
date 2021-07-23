@@ -11,9 +11,10 @@
 
 ;; In-memory for testing
 
-(defn- get-free-port []
+(defn- get-free-port
+  []
   (let [socket (ServerSocket. 0)
-        port (.getLocalPort socket)]
+        port   (.getLocalPort socket)]
     (.close socket)
     port))
 
@@ -36,7 +37,7 @@
 
   _All_ data will be wiped after shutting down the db!"
   []
-  (let [url (create-temp-uri)
+  (let [url       (create-temp-uri)
         ^Neo4j db (in-memory-db)]
     (merge (connect (.boltURI db) {:logging (ConsoleLogging. Level/WARNING)})
            {:destroy-fn #(.close db)})))

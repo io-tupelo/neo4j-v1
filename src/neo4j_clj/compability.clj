@@ -10,10 +10,10 @@
   neo4j-clj.compatibility/clj->neo4j)
 
 (def neo4j->clj
-          "## Convert from Neo4j
+  "## Convert from Neo4j
 
            Neo4j returns results as `StatementResults`, which contain `InternalRecords`,
            which contain `InternalPairs` etc. Therefore, this multimethod recursively
            calls itself with the extracted content of the data structure until we have
            values, lists or `nil`."
-          neo4j-clj.compatibility/neo4j->clj)
+  neo4j-clj.compatibility/neo4j->clj)

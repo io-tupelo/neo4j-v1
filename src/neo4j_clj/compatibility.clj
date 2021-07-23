@@ -8,7 +8,8 @@
              InternalRecord
              InternalPair
              InternalRelationship
-             InternalNode InternalResult)
+             InternalNode
+             InternalResult)
            (org.neo4j.driver.internal.value
              NodeValue
              NullValue
@@ -35,15 +36,16 @@
        Values/parameters))
 
 (defmulti neo4j->clj
-          "## Convert from Neo4j
+  "## Convert from Neo4j
 
            Neo4j returns results as `StatementResults`, which contain `InternalRecords`,
            which contain `InternalPairs` etc. Therefore, this multimethod recursively
            calls itself with the extracted content of the data structure until we have
            values, lists or `nil`."
-          class)
+  class)
 
-(defn transform [m]
+(defn transform
+  [m]
   (let [f (fn [[k v]]
             [(if (string? k) (keyword k) k) (neo4j->clj v)])]
 
@@ -52,64 +54,86 @@
       (fn [x]
         (if (or (map? x) (instance? Map x))
           (with-meta (into {} (map f x))
-                     (meta x))
+            (meta x))
           x))
       m)))
 
-(defmethod neo4j->clj InternalResult [record]
+(defmethod neo4j->clj InternalResult
+  [record]
   (map neo4j->clj (iterator-seq record)))
 
-(defmethod neo4j->clj InternalRecord [record]
+(defmethod neo4j->clj InternalRecord
+  [record]
   (apply merge (map neo4j->clj (.fields record))))
 
-(defmethod neo4j->clj InternalPair [^InternalPair pair]
-  (let [k (-> pair .key keyword)
-        v (-> pair .value neo4j->clj)]
+(defmethod neo4j->clj InternalPair
+  [^InternalPair pair]
+  (let [k (-> pair
+              .key
+              keyword)
+        v (-> pair
+              .value
+              neo4j->clj)]
     {k v}))
 
-(defmethod neo4j->clj NodeValue [^NodeValue value]
+(defmethod neo4j->clj NodeValue
+  [^NodeValue value]
   (transform (into {} (.asMap value))))
 
-(defmethod neo4j->clj RelationshipValue [^RelationshipValue value]
+(defmethod neo4j->clj RelationshipValue
+  [^RelationshipValue value]
   (transform (into {} (.asMap (.asRelationship value)))))
 
-(defmethod neo4j->clj StringValue [^StringValue v]
+(defmethod neo4j->clj StringValue
+  [^StringValue v]
   (.asObject v))
 
-(defmethod neo4j->clj ObjectValueAdapter [^ObjectValueAdapter v]
+(defmethod neo4j->clj ObjectValueAdapter
+  [^ObjectValueAdapter v]
   (.asObject v))
 
-(defmethod neo4j->clj BooleanValue [^BooleanValue v]
+(defmethod neo4j->clj BooleanValue
+  [^BooleanValue v]
   (.asBoolean v))
 
-(defmethod neo4j->clj NumberValueAdapter [^NumberValueAdapter v]
+(defmethod neo4j->clj NumberValueAdapter
+  [^NumberValueAdapter v]
   (.asNumber v))
 
-(defmethod neo4j->clj ListValue [^ListValue l]
+(defmethod neo4j->clj ListValue
+  [^ListValue l]
   (map neo4j->clj (into [] (.asList l))))
 
-(defmethod neo4j->clj ISeq [^ISeq s]
+(defmethod neo4j->clj ISeq
+  [^ISeq s]
   (map neo4j->clj s))
 
-(defmethod neo4j->clj MapValue [^MapValue l]
+(defmethod neo4j->clj MapValue
+  [^MapValue l]
   (transform (into {} (.asMap l))))
 
-(defmethod neo4j->clj InternalNode [^InternalNode n]
+(defmethod neo4j->clj InternalNode
+  [^InternalNode n]
   (with-meta (transform (into {} (.asMap n)))
-             {:labels (.labels n)
-              :id     (.id n)}))
+    {:labels (.labels n)
+     :id     (.id n)}))
 
-(defmethod neo4j->clj InternalRelationship [^InternalRelationship r]
+(defmethod neo4j->clj InternalRelationship
+  [^InternalRelationship r]
   (neo4j->clj (.asValue r)))
 
-(defmethod neo4j->clj NullValue [n]
+(defmethod neo4j->clj NullValue
+  [n]
   nil)
 
-(defmethod neo4j->clj List [^List l]
+(defmethod neo4j->clj List
+  [^List l]
   (map neo4j->clj (into [] l)))
 
-(defmethod neo4j->clj Map [^Map m]
+(defmethod neo4j->clj Map
+  [^Map m]
   (transform (into {} m)))
 
-(defmethod neo4j->clj :default [x]
+(defmethod neo4j->clj :default
+  [x]
   x)
