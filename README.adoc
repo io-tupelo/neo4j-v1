@@ -1,10 +1,16 @@
-# neo4j-clj
+= neo4j-clj
 
 Clojure client API to Neo4j database. Uses the bolt protocol.
 
 tupelo/neo4j is a clojure client library to the https://neo4j.com/[Neo4j graph database],
 relying on the 
 https://boltprotocol.org[Bolt protocol].
+
+== Running tests
+
+Just run through lein
+
+    > lein clean; lein test
 
 
 == License
