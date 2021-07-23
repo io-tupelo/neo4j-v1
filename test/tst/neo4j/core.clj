@@ -1,5 +1,5 @@
 (ns tst.neo4j.core
-  (:use neo4j.core tupelo.core clojure.test)
+  (:use neo4j.core tupelo.core tupelo.test)
   (:require
     [environ.core :as environ]
     [tupelo.string :as str]
@@ -9,10 +9,10 @@
     [org.neo4j.driver.exceptions TransientException]
   ))
 
-(deftest t-013
+(dotest 
   (newline)
   (println :-----------------------------------------------------------------------------)
-  (println "neo4j-uri  =>  " (environ/env :neo4j-uri))
+  (spy (str "neo4j-uri  =>  " (environ/env :neo4j-uri)))
   (newline)
 )
 
@@ -42,7 +42,7 @@
   {:name (:name dummy-user)})
 
 ;; Simple CRUD
-(deftest create-get-delete-user
+(dotest ; create-get-delete-user
   (with-open [session (get-session temp-db)]
     (spy "You can create a new user with neo4j")
     (time (create-test-user session {:user dummy-user}))
@@ -68,14 +68,14 @@
   ))
 
 ;; Cypher exceptions
-(deftest invalid-cypher-does-throw
+(dotest ; invalid-cypher-does-throw
   (with-open [session (get-session temp-db)]
     (spy "An invalid cypher query does trigger an exception")
     (time (is (thrown? Exception (execute session "INVALID!!§$/%&/("))))
   ))
 
 ;; Transactions
-(deftest transactions-do-commit
+(dotest ; transactions-do-commit
 
   (spy "If using a transaction, writes are persistet")
   (time
@@ -105,11 +105,11 @@
 )
 
 ;; Retry
-(deftest deadlocks-fail
+(dotest ; deadlocks-fail
   (newline)
-  (println "When a deadlock occures,")
+  (spy "When a deadlock occures,")
 
-  (testing "the transaction throws an Exception")
+  (spy "the transaction throws an Exception")
   (time
     (is (thrown? TransientException
                  (with-transaction temp-db
@@ -125,9 +125,11 @@
                                (throw (TransientException. "" "I fail")))
                            :result))))))
 
-  (spy "the retried transaction throws after max retries")
-  #_(time ; 500ms local neo4, 3-5 min with remote Aura neo4j
-      (is (thrown? TransientException
-                   (with-retry [temp-db tx]
-                               (throw (TransientException. "" "I fail"))))))
+  ; ***** SLOW!!!  500ms local Neo4j, 3-5 min with remote Aura Neo4j *****
+  (when false
+    (spy "the retried transaction throws after max retries")
+    (time
+        (is (thrown? TransientException
+                     (with-retry [temp-db tx]
+                                 (throw (TransientException. "" "I fail")))))))
 )
