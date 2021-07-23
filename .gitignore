@@ -1,15 +1,15 @@
+*jar
+.lein-deps-sum
+.lein-failures
+.lein-plugins/
+.lein-repl-history
+.nrepl-port
+/checkouts/
+/classes/
+/lib/
+/target/
 pom.xml
 pom.xml.asc
-*jar
-/lib/
-/classes/
-/target/
-/checkouts/
-.lein-deps-sum
-.lein-repl-history
-.lein-plugins/
-.lein-failures
-.nrepl-port
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
