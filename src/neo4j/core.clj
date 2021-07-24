@@ -2,7 +2,7 @@
   "This namespace contains the logic to connect to Neo4j instances,
   create and run queries "
   (:require
-    [neo4j.compatibility :refer [neo4j->clj clj->neo4j]])
+    [neo4j.compatibility :as compat ])
   (:import 
     [java.net URI]
     [java.util.logging Level]
@@ -11,7 +11,8 @@
     [org.neo4j.driver.internal.logging ConsoleLogging]
   ))
 
-;; Connecting to dbs
+;-----------------------------------------------------------------------------
+; Connecting to Neo4j
 
 (defn config
   [options]
@@ -30,37 +31,39 @@
   `:logging`   - a Neo4j logging configuration, e.g. (ConsoleLogging. Level/FINEST)"
   ([^URI uri user password]
    (connect uri user password nil))
+
   ([^URI uri user password options]
    (let [^AuthToken auth (AuthTokens/basic user password)
          ^Config config (config options)
-         db (GraphDatabase/driver uri auth config)]
+         driver (GraphDatabase/driver uri auth config)]
      {:url        uri
       :user       user
       :password   password
-      :db         db
-      :destroy-fn #(.close db)}))
+      :driver         driver 
+      :destroy-fn #(.close driver)}))
 
   ([^URI uri]
    (connect uri nil))
 
   ([^URI uri options]
    (let [^Config config (config options)
-         db (GraphDatabase/driver uri config)]
+         driver (GraphDatabase/driver uri config)]
      {:url        uri
-      :db         db
-      :destroy-fn #(.close db)})))
+      :driver         driver
+      :destroy-fn #(.close driver)}))
+)
 
 (defn disconnect
-  [db]
+  [dbconn]
   "Disconnect a connection"
-  ((:destroy-fn db)))
+  ((:destroy-fn dbconn)))
 
-
-;; Sessions and transactions
+;-----------------------------------------------------------------------------
+; Sessions and transactions
 
 (defn get-session
-  [^Driver connection]
-  (.session (:db connection)))
+  [connection]
+  (.session (:driver connection)))
 
 (defn- make-success-transaction
   [tx]
@@ -71,7 +74,7 @@
     (commit [] (.commit tx))
     (rollback [] (.rollback tx))
 
-    ;; We only want to auto-success to ensure persistence
+    ; We only want to auto-success to ensure persistence
     (close []
       (.commit tx)
       (.close tx))))
@@ -80,13 +83,14 @@
   [^Session session]
   (make-success-transaction (.beginTransaction session)))
 
-;; Executing cypher queries
+;-----------------------------------------------------------------------------
+; Executing cypher queries
 
 (defn execute
-  ([sess query params]
-   (neo4j->clj (.run sess query (clj->neo4j params))))
   ([sess query]
-   (neo4j->clj (.run sess query))))
+   (compat/neo4j->clj (.run sess query)))
+  ([sess query params]
+   (compat/neo4j->clj (.run sess query (compat/clj->neo4j params)))))
 
 (defn create-query
   "Convenience function. Takes a cypher query as input, returns a function that
@@ -120,7 +124,9 @@
      ~@body))
 
 (defmacro with-retry
-  [[connection tx & {:keys [max-times] :or {max-times 1000}}] & body]
+  [[connection tx & {:keys [max-times] :or {max-times 10}}] & body]
   `(retry-times ~max-times
                 (fn []
-                  (with-transaction ~connection ~tx ~@body))))
+                  (with-transaction ~connection ~tx 
+                    ~@body))))
+
